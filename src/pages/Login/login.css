@@ -1,0 +1,35 @@
+/* Login.css */
+.login-page {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+  
+  .card {
+    background: rgba(255, 255, 255, 0.98) !important; /* Fundo menos transparente */
+    border-radius: 10px !important; /* Bordas menos arredondadas */
+    max-width: 400px; /* Largura máxima (opcional) */
+    margin: 0 auto; /* Centraliza horizontalmente */
+  }
+  
+  /* Botão "Esqueceu a senha" mais discreto */
+  .btn-link {
+    color: #6c757d !important;
+    text-decoration: none !important;
+  }
+  
+  .btn-link:hover {
+    color: #3a86ff !important;
+  }
+  
+  /* Efeito hover no botão de login */
+  .btn-primary {
+    transition: all 0.3s ease;
+  }
+  
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
