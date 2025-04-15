@@ -1,5 +1,19 @@
 import { useEffect, useState } from "react";
-import { Container, Row, Col, Card, CardBody, Form, FormGroup, Label, Input, Button } from "reactstrap";
+import { 
+  Container, 
+  Row, 
+  Col, 
+  Card, 
+  CardBody, 
+  Form, 
+  FormGroup, 
+  Input, 
+  Button,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter 
+} from "reactstrap";
 import { ToastContainer, toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
@@ -10,126 +24,155 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
+  const [errors, setErrors] = useState({ email: '', password: '' });
 
   useEffect(() => {
     document.body.classList.add("login-body");
     return () => document.body.classList.remove("login-body");
   }, []);
 
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  const validateForm = () => {
+    const newErrors = { email: '', password: '' };
+    let valid = true;
+
+    if (!email) newErrors.email = 'Insira seu email';
+    else if (!validateEmail(email)) newErrors.email = 'Email inválido';
+
+    if (!password) newErrors.password = 'Insira sua senha';
+    else if (password.length < 6) newErrors.password = 'Mínimo 6 caracteres';
+
+    setErrors(newErrors);
+    return valid = !newErrors.email && !newErrors.password;
+  };
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    validateForm() && toast.success('Login validado!');
+  };
+
   const handleForgotPassword = () => {
-    if (!forgotEmail) {
-      toast.error("Digite um e-mail válido!");
+    if (!validateEmail(forgotEmail)) {
+      toast.error(forgotEmail ? "Email inválido" : "Digite seu email");
       return;
     }
-    toast.success(`Link de recuperação enviado para: ${forgotEmail}`);
-    setShowForgotPassword(false);
-    setForgotEmail("");
+    toast.success(`Link enviado para: ${forgotEmail}`);
+    setForgotPasswordModal(false);
   };
 
   return (
     <div className="login-page">
       <ParticlesBackground />
       <ToastContainer position="top-right" autoClose={3000} />
+      
       <Container fluid>
         <Row className="justify-content-center align-items-center min-vh-100">
           <Col xs="10" sm="8" md="5" lg="4" className="z-3 position-relative">
-            <Card className="shadow-sm">
+            <Card className="shadow-sm login-card">
               <CardBody className="p-4">
-                <h2 className="text-center mb-3" style={{ fontSize: "1.5rem" }}>Login</h2>
-                <Form>
+                <img
+                  src="/knapp_logo.svg.png"
+                  alt="Logo Knapp"
+                  className="img-fluid mx-auto d-block mb-4"
+                  style={{ maxWidth: "160px" }}
+                />
+                
+                <Form onSubmit={handleLogin} className="login-form">
+                  {/* Campo Email */}
                   <FormGroup>
-                    <Label for="email">Email</Label>
                     <Input
                       type="email"
-                      id="email"
-                      placeholder="seu@email.com"
+                      placeholder="Email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="py-2"
+                      className={`form-input ${errors.email && 'is-invalid'}`}
                     />
+                    {errors.email && <div className="error-feedback">{errors.email}</div>}
                   </FormGroup>
+
+                  {/* Campo Senha */}
                   <FormGroup>
-                    <Label for="senha">Senha</Label>
                     <Input
                       type="password"
-                      id="senha"
-                      placeholder="••••••••"
+                      placeholder="Senha"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="py-2"
+                      className={`form-input ${errors.password && 'is-invalid'}`}
                     />
+                    {errors.password && <div className="error-feedback">{errors.password}</div>}
                   </FormGroup>
-                  <FormGroup check className="mb-2 mt-2">
-                    <Input
-                      type="checkbox"
-                      id="remember"
-                      checked={rememberMe}
-                      onChange={() => setRememberMe(!rememberMe)}
-                    />
-                    <Label for="remember" check className="small">
-                      Lembrar credenciais
-                    </Label>
-                  </FormGroup>
-                  <Button color="primary" block className="mt-2 py-2">
-                    Entrar
-                  </Button>
-                  <div className="text-center mt-2">
-                    <Button
-                      color="link"
-                      className="p-0 small"
-                      onClick={() => setShowForgotPassword(true)}
+
+                  {/* Lembrar credenciais */}
+                  <div className="d-flex justify-content-between align-items-center mb-4">
+                    <div className="form-check">
+                      <input
+                        type="checkbox"
+                        id="remember"
+                        checked={rememberMe}
+                        onChange={() => setRememberMe(!rememberMe)}
+                        className="form-check-input"
+                      />
+                      <label htmlFor="remember" className="form-check-label small">
+                        Lembrar-me
+                      </label>
+                    </div>
+                    
+                    <button
+                      type="button"
+                      className="btn btn-link p-0 text-decoration-none forgot-password-btn"
+                      onClick={() => setForgotPasswordModal(true)}
                     >
                       Esqueceu a senha?
-                    </Button>
+                    </button>
                   </div>
-                  <div className="text-center mt-4" style={{ fontSize: "1rem" }}> {/* Aumentei de small para 0.95rem */}
-                    <span className="text-muted">Não possui registro na Knapp? Deseja solicitar um registro?</span>{" "}
-                    <Link 
-                      to="/register" 
-                      className="text-primary fw-bold" 
-                      style={{ textDecoration: "none" }}
-                    >
-                      Clique aqui!
-                    </Link>
-                  </div>
+
+                  {/* Botão Entrar */}
+                  <Button type="submit" block className="btn-login">
+                    Entrar
+                  </Button>
                 </Form>
+
+                {/* Rodapé */}
+                <div className="text-center mt-4">
+                  <span className="text-muted">Não tem cadastro? </span>
+                  <Link to="/register" className="register-link">
+                    Solicite acesso
+                  </Link>
+                </div>
               </CardBody>
             </Card>
-
-            {showForgotPassword && (
-              <Card className="shadow-sm mt-3">
-                <CardBody className="p-4">
-                  <h5 className="text-center mb-2" style={{ fontSize: "1.25rem" }}>Recuperar Senha</h5>
-                  <FormGroup>
-                    <Input
-                      type="email"
-                      placeholder="seu@email.com"
-                      value={forgotEmail}
-                      onChange={(e) => setForgotEmail(e.target.value)}
-                      className="py-2"
-                    />
-                  </FormGroup>
-                  <div className="d-flex justify-content-between mt-2">
-                    <Button
-                      color="secondary"
-                      outline
-                      size="sm"
-                      onClick={() => setShowForgotPassword(false)}
-                    >
-                      Cancelar
-                    </Button>
-                    <Button color="primary" size="sm" onClick={handleForgotPassword}>
-                      Enviar
-                    </Button>
-                  </div>
-                </CardBody>
-              </Card>
-            )}
           </Col>
         </Row>
       </Container>
+
+      {/* Modal Recuperação de Senha */}
+      <Modal isOpen={forgotPasswordModal} toggle={() => setForgotPasswordModal(false)} centered>
+        <ModalHeader toggle={() => setForgotPasswordModal(false)} className="border-0 pb-0">
+          <h5 className="modal-title">Recuperar Senha</h5>
+        </ModalHeader>
+        <ModalBody>
+          <FormGroup>
+            <Input
+              type="email"
+              placeholder="Digite seu email cadastrado"
+              value={forgotEmail}
+              onChange={(e) => setForgotEmail(e.target.value)}
+              className="form-input"
+            />
+          </FormGroup>
+        </ModalBody>
+        <ModalFooter className="border-0 pt-0">
+          <Button color="light" onClick={() => setForgotPasswordModal(false)}>
+            Cancelar
+          </Button>
+          <Button color="primary" onClick={handleForgotPassword} className="btn-yellow">
+            Enviar Link
+          </Button>
+        </ModalFooter>
+      </Modal>
     </div>
   );
 };

@@ -1,28 +1,51 @@
-// src/components/Sidebar.jsx
-import { Home, Settings, LogOut } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Home, Settings, UserPlus, CheckCircle } from 'lucide-react'
+import { NavLink } from 'react-router-dom'
 
 export default function Sidebar() {
   return (
-    <aside className="w-64 bg-blue-700 text-white min-h-screen shadow-lg flex flex-col justify-between">
-      <div>
-        <div className="p-6 text-2xl font-bold border-b border-blue-800">
-          Meu Painel
+    <aside className="fixed top-16 left-0 bottom-0 w-64 bg-white shadow-md p-4">
+      <nav className="space-y-1">
+        {/* Seção Dashboard */}
+        <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          Dashboard
         </div>
-        <nav className="flex flex-col gap-2 mt-4 px-4">
-          <Link to="/" className="flex items-center gap-2 p-2 rounded hover:bg-blue-600 transition">
-            <Home size={20} /> Dashboard
-          </Link>
-          <Link to="/settings" className="flex items-center gap-2 p-2 rounded hover:bg-blue-600 transition">
-            <Settings size={20} /> Configurações
-          </Link>
-        </nav>
-      </div>
-      <div className="p-4 border-t border-blue-800">
-        <button className="flex items-center gap-2 w-full text-left hover:bg-blue-600 p-2 rounded transition">
-          <LogOut size={20} /> Sair
-        </button>
-      </div>
+        
+        <NavLink
+          to="/approval"
+          className={({ isActive }) =>
+            `flex items-center px-3 py-2 rounded-lg ${
+              isActive ? 'bg-[#F3C300] text-white' : 'text-gray-700 hover:bg-gray-100'
+            }`
+          }
+        >
+          <CheckCircle size={18} className="mr-3" />
+          Aprovação
+        </NavLink>
+        
+        <NavLink
+          to="/settings"
+          className={({ isActive }) =>
+            `flex items-center px-3 py-2 rounded-lg ${
+              isActive ? 'bg-[#F3C300] text-white' : 'text-gray-700 hover:bg-gray-100'
+            }`
+          }
+        >
+          <Settings size={18} className="mr-3" />
+          Configurações
+        </NavLink>
+        
+        <NavLink
+          to="/users"
+          className={({ isActive }) =>
+            `flex items-center px-3 py-2 rounded-lg ${
+              isActive ? 'bg-[#F3C300] text-white' : 'text-gray-700 hover:bg-gray-100'
+            }`
+          }
+        >
+          <UserPlus size={18} className="mr-3" />
+          Cadastrar usuários
+        </NavLink>
+      </nav>
     </aside>
   )
 }

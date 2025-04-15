@@ -1,26 +1,19 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login/login'
 import Dashboard from './pages/Dashboard/Dashboard'
 import Layout from './components/Layout'
-import Register from './pages/Register/Register'
+import './index.css'
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Página de login sem Layout */}
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-
-        {/* Rota protegida com Layout */}
-        <Route
-          path="/"
-          element={
-            <Layout>
-              <Dashboard />
-            </Layout>
-          }
-        />
+        <Route path="/" element={<Navigate to="/home" replace />} />
+        
+        <Route element={<Layout />}>
+          <Route path="/home" element={<Dashboard />} />
+        </Route>
       </Routes>
     </Router>
   )

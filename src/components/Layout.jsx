@@ -1,20 +1,20 @@
-// src/components/Layout.jsx
-import Sidebar from './Sidebar.jsx'
-import Footer from './Footer.jsx'
 import { Outlet } from 'react-router-dom'
+import Topbar from './Topbar'
+import Sidebar from './Sidebar'
 
-function Layout({ children }) {
+export default function Layout() {
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <div className="flex-1 flex flex-col">
-        <main className="flex-1 p-4 bg-gray-100">
-          {children || <Outlet />}
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <Topbar />
+      
+      <div className="flex flex-1 pt-16"> {/* Compensa a altura do Topbar */}
+        <Sidebar />
+        
+        {/* Área de conteúdo principal */}
+        <main className="flex-1 p-6 ml-64"> {/* ml-64 compensa a largura do Sidebar */}
+          <Outlet />
         </main>
-        <Footer />
       </div>
     </div>
   )
 }
-
-export default Layout
