@@ -59,9 +59,6 @@ Acesse em: http://localhost:5173
 Acesse a tela de login em:
 http://localhost:5173/login
 
-📝 Notas
-A tela de login está separada da estrutura de layout principal para melhor controle visual.
-O background usa partículas pretas suaves com animação fluida.
 
 📄 Licença
 Este projeto está sob a licença da equipe 11 da turma de Engenharia de Software, 7º período. Developer: Vinicius Polonio.
