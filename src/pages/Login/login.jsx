@@ -1,3 +1,4 @@
+// src/components/Login/Login.jsx
 import { useEffect, useState } from "react";
 import { 
   Container, 
@@ -15,43 +16,65 @@ import {
   ModalFooter 
 } from "reactstrap";
 import { ToastContainer, toast } from "react-toastify";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "react-toastify/dist/ReactToastify.css";
 import "./Login.css";
-import ParticlesBackground from "../Particles/ParticlesBackground";
+import ParticlesBackground from "../../components/Particles/ParticlesBackground";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
-  const [errors, setErrors] = useState({ email: '', password: '' });
+  const [errors, setErrors] = useState({ email: "", password: "" });
+  const navigate = useNavigate();
 
   useEffect(() => {
     document.body.classList.add("login-body");
     return () => document.body.classList.remove("login-body");
   }, []);
 
-  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validateEmail = (email) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const validateForm = () => {
-    const newErrors = { email: '', password: '' };
+    const newErrors = { email: "", password: "" };
     let valid = true;
 
-    if (!email) newErrors.email = 'Insira seu email';
-    else if (!validateEmail(email)) newErrors.email = 'Email inválido';
+    if (!email) {
+      newErrors.email = "Insira seu email";
+      valid = false;
+    } else if (!validateEmail(email)) {
+      newErrors.email = "Email inválido";
+      valid = false;
+    }
 
-    if (!password) newErrors.password = 'Insira sua senha';
-    else if (password.length < 6) newErrors.password = 'Mínimo 6 caracteres';
+    if (!password) {
+      newErrors.password = "Insira sua senha";
+      valid = false;
+    } else if (password.length < 6) {
+      newErrors.password = "Mínimo 6 caracteres";
+      valid = false;
+    }
 
     setErrors(newErrors);
-    return valid = !newErrors.email && !newErrors.password;
+    return valid;
   };
 
   const handleLogin = (e) => {
     e.preventDefault();
-    validateForm() && toast.success('Login validado!');
+    if (!validateForm()) return;
+
+    // Credenciais mockadas
+    if (email === "test@gmail.com" && password === "knapp@123456") {
+      toast.success("Login realizado com sucesso!");
+      setTimeout(() => navigate("/home"), 500);
+    } else {
+      toast.error("E-mail ou senha incorretos");
+    }
   };
 
   const handleForgotPassword = () => {
@@ -67,7 +90,7 @@ const Login = () => {
     <div className="login-page">
       <ParticlesBackground />
       <ToastContainer position="top-right" autoClose={3000} />
-      
+
       <Container fluid>
         <Row className="justify-content-center align-items-center min-vh-100">
           <Col xs="10" sm="8" md="5" lg="4" className="z-3 position-relative">
@@ -79,7 +102,7 @@ const Login = () => {
                   className="img-fluid mx-auto d-block mb-4"
                   style={{ maxWidth: "160px" }}
                 />
-                
+
                 <Form onSubmit={handleLogin} className="login-form">
                   {/* Campo Email */}
                   <FormGroup>
@@ -88,24 +111,36 @@ const Login = () => {
                       placeholder="Email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className={`form-input ${errors.email && 'is-invalid'}`}
+                      className={`form-input ${errors.email && "is-invalid"}`}
                     />
-                    {errors.email && <div className="error-feedback">{errors.email}</div>}
+                    {errors.email && (
+                      <div className="error-feedback">{errors.email}</div>
+                    )}
                   </FormGroup>
 
-                  {/* Campo Senha */}
-                  <FormGroup>
+                  {/* Campo Senha com toggle */}
+                  <FormGroup className="password-field-wrapper">
                     <Input
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       placeholder="Senha"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className={`form-input ${errors.password && 'is-invalid'}`}
+                      className={`form-input ${errors.password && "is-invalid"}`}
                     />
-                    {errors.password && <div className="error-feedback">{errors.password}</div>}
+                    <button
+                      type="button"
+                      className="password-toggle"
+                      onClick={() => setShowPassword(v => !v)}
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <FaEye /> : <FaEyeSlash />}
+                    </button>
+                    {errors.password && (
+                      <div className="error-feedback">{errors.password}</div>
+                    )}
                   </FormGroup>
 
-                  {/* Lembrar credenciais */}
+                  {/* Lembrar credenciais e Esqueceu senha */}
                   <div className="d-flex justify-content-between align-items-center mb-4">
                     <div className="form-check">
                       <input
@@ -115,11 +150,14 @@ const Login = () => {
                         onChange={() => setRememberMe(!rememberMe)}
                         className="form-check-input"
                       />
-                      <label htmlFor="remember" className="form-check-label small">
+                      <label
+                        htmlFor="remember"
+                        className="form-check-label small"
+                      >
                         Lembrar-me
                       </label>
                     </div>
-                    
+
                     <button
                       type="button"
                       className="btn btn-link p-0 text-decoration-none forgot-password-btn"
@@ -149,8 +187,15 @@ const Login = () => {
       </Container>
 
       {/* Modal Recuperação de Senha */}
-      <Modal isOpen={forgotPasswordModal} toggle={() => setForgotPasswordModal(false)} centered>
-        <ModalHeader toggle={() => setForgotPasswordModal(false)} className="border-0 pb-0">
+      <Modal
+        isOpen={forgotPasswordModal}
+        toggle={() => setForgotPasswordModal(false)}
+        centered
+      >
+        <ModalHeader
+          toggle={() => setForgotPasswordModal(false)}
+          className="border-0 pb-0"
+        >
           <h5 className="modal-title">Recuperar Senha</h5>
         </ModalHeader>
         <ModalBody>
@@ -168,7 +213,11 @@ const Login = () => {
           <Button color="light" onClick={() => setForgotPasswordModal(false)}>
             Cancelar
           </Button>
-          <Button color="primary" onClick={handleForgotPassword} className="btn-yellow">
+          <Button
+            color="primary"
+            onClick={handleForgotPassword}
+            className="btn-yellow"
+          >
             Enviar Link
           </Button>
         </ModalFooter>

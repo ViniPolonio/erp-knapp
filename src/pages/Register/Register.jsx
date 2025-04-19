@@ -23,7 +23,7 @@ import {
   faMapMarkerAlt,
   faRoad
 } from "@fortawesome/free-solid-svg-icons";
-import ParticlesBackground from "../Particles/ParticlesBackground";
+import ParticlesBackground from "../../components/Particles/ParticlesBackground";
 import "../Login/Login.css";
 
 // Listas de opções

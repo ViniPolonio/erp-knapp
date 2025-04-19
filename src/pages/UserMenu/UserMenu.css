@@ -1,0 +1,133 @@
+/* container principal */
+.user-profile {
+  position: relative;
+  display: inline-block;
+  margin-left: auto; /* empurra para a direita */
+}
+
+/* avatar circular */
+.user-avatar {
+  background-color: #4caf50;
+  color: #fff;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.user-avatar:hover {
+  background-color: #45a049;
+}
+
+/* === POPOVER === */
+.popover {
+  position: absolute;
+  top: 0;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  padding: 15px;
+  width: 200px;
+  z-index: 100;
+}
+.popover.left { left: 50px; }
+.popover.right { right: 50px; }
+
+.popover-content { display: flex; flex-direction: column; }
+.popover h4 {
+  margin: 0 0 10px;
+  font-size: 16px;
+  color: #333;
+}
+.popover-buttons { display: flex; flex-direction: column; }
+.popover-item {
+  background: none;
+  border: none;
+  color: #4caf50;
+  padding: 8px 0;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.popover-item:hover { color: #45a049; }
+.popover-item.logout {
+  color: #e74c3c;
+}
+.popover-item.logout:hover {
+  color: #c0392b;
+}
+
+
+/* === MODAL DE TROCAR SENHA === */
+.pwd-modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.pwd-modal {
+  background: #fff;
+  padding: 25px 30px;
+  border-radius: 12px;
+  width: 360px;
+  max-width: 90%;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+  text-align: center;
+  color: #333;
+}
+
+.pwd-modal h3 {
+  margin-bottom: 15px;
+  font-size: 20px;
+}
+.pwd-modal p {
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #555;
+}
+.email-destino {
+  margin-bottom: 15px;
+  font-weight: bold;
+  color: #444;
+}
+
+.pwd-modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pwd-modal-buttons .confirm {
+  background: #4caf50;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+.pwd-modal-buttons .confirm:hover {
+  background: #45a049;
+}
+
+.pwd-modal-buttons .cancel {
+  background: transparent;
+  border: 1px solid #ccc;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+.pwd-modal-buttons .cancel:hover {
+  border-color: #888;
+}
