@@ -1,9 +1,9 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import Login from './pages/Login/login'
+import Login from './pages/Login/Login'
 import Register from './pages/Register/Register'
-import Dashboard from './pages/Dashboard/Dashboard'
 import Layout from './components/Layout/Layout'
 import './index.css'
+import Home from './pages/Home/Home'
 
 function App() {
   return (
@@ -12,10 +12,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        <Route path="/" element={<Navigate to="/home" replace />} />
         
         <Route element={<Layout />}>
-          <Route path="/home" element={<Dashboard />} />
+          <Route path="/home" element={<Home />} />
         </Route>
       </Routes>
     </Router>
