@@ -1,23 +1,26 @@
 import { Outlet, NavLink } from "react-router-dom";
 import UserMenu from "../../pages/UserMenu/UserMenu";
 import './Layout.css';
+import UsersMenu from "./Users";
+import { FaFolderOpen, FaChartLine } from "react-icons/fa";
 
 const Layout = () => {
   const menuItems = [
-    { path: "/dashboard", name: "Dashboard", icon: "📊" },
-    { path: "/projects", name: "Projetos", icon: "📁" },
-    { path: "/reports", name: "Relatórios", icon: "📈" }
+    { path: "/projects", name: "Projetos", icon: <FaFolderOpen /> },
+    { path: "/reports", name: "Relatórios", icon: <FaChartLine /> }
   ];
 
-  // Nome mockado do usuário
-  const userName = "Vinicius"; // Aqui você pode alterar para o nome real do usuário conforme necessário | PEGAR DO STORAGE DO NAVEGADOR
+  const userName = "Vinicius"; // depois pode puxar do localStorage/session etc.
 
   return (
     <div className="app-layout">
       <header className="layout-header">
         <div className="header-content">
-          <img src="/knapp_logo.svg.png" alt="Logo Knapp" className="layout-logo" />
-          <UserMenu userName={userName} /> {/* Passando o nome para o componente UserMenu */}
+          {/* Logo clicável que leva para /home */}
+          <NavLink to="/home">
+            <img src="/knapp_logo.svg.png" alt="Logo Knapp" className="layout-logo" />
+          </NavLink>
+          <UserMenu userName={userName} />
         </div>
       </header>
 
@@ -25,6 +28,8 @@ const Layout = () => {
         <aside className="layout-sidebar">
           <nav className="sidebar-nav">
             <ul>
+              <UsersMenu />
+
               {menuItems.map((item) => (
                 <li key={item.path}>
                   <NavLink 

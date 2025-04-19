@@ -20,7 +20,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "react-toastify/dist/ReactToastify.css";
 import "./Login.css";
-import ParticlesBackground from "../Particles/ParticlesBackground";
+import ParticlesBackground from "../../components/Particles/ParticlesBackground";
 
 const Login = () => {
   const [email, setEmail] = useState("");

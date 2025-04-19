@@ -1,0 +1,11 @@
+.user-option-special {
+    background-color: #f0f8ff; /* light blue background */
+    padding: 5px 10px; /* example padding */
+    border-radius: 3px; /* rounded corners */
+}
+
+.user-option-separator {
+    margin-top: 10px; /* example space between options */
+    margin-bottom: 10px;
+    display: block;
+}
