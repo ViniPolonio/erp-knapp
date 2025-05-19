@@ -21,8 +21,10 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "react-toastify/dist/ReactToastify.css";
 import "./Login.css";
 import ParticlesBackground from "../../components/Particles/ParticlesBackground";
+import axios from "axios";
 
 const Login = () => {
+  const apiUrl = import.meta.env.VITE_KNAPP_API;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -64,16 +66,31 @@ const Login = () => {
     return valid;
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-
-    // Credenciais mockadas
-    if (email === "test@gmail.com" && password === "knapp@123456") {
+  
+    try {
+      const response = await axios.post(`${apiUrl}/api/login`, {
+        email,
+        password,
+      });
+  
+      const data = response.data;
+  
+      // Salva token e usuário no localStorage
+      localStorage.setItem("token", data.access_token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+  
       toast.success("Login realizado com sucesso!");
       setTimeout(() => navigate("/home"), 500);
-    } else {
-      toast.error("E-mail ou senha incorretos");
+    } catch (error) {
+      // Axios lança erro se status != 2xx
+      if (error.response && error.response.data && error.response.data.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Erro ao conectar com o servidor");
+      }
     }
   };
 
