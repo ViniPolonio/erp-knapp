@@ -79,8 +79,8 @@ const Login = () => {
       const data = response.data;
   
       // Salva token e usuário no localStorage
-      localStorage.setItem("token", data.access_token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      sessionStorage.setItem("token", data.access_token);
+      sessionStorage.setItem("user", JSON.stringify(data.user));
   
       toast.success("Login realizado com sucesso!");
       setTimeout(() => navigate("/home"), 500);
@@ -194,7 +194,7 @@ const Login = () => {
                 <div className="text-center mt-4">
                   <span className="text-muted">Não tem cadastro? </span>
                   <Link to="/register" className="register-link">
-                    Solicite acesso
+                    Solicite Registro
                   </Link>
                 </div>
               </CardBody>
