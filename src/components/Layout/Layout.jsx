@@ -10,17 +10,20 @@ const Layout = () => {
     { path: "/reports", name: "Relatórios", icon: <FaChartLine /> }
   ];
 
-  const userName = "Vinicius"; // depois pode puxar do localStorage/session etc.
-
+  const user = JSON.parse(sessionStorage.getItem("user"));
+  const userName = user?.name || "Usuário";
+  
   return (
     <div className="app-layout">
       <header className="layout-header">
-        <div className="header-content">
-          {/* Logo clicável que leva para /home */}
-          <NavLink to="/home">
+        <div className="header-wrapper">
+          <NavLink to="/home" className="logo-container">
             <img src="/knapp_logo.svg.png" alt="Logo Knapp" className="layout-logo" />
           </NavLink>
-          <UserMenu userName={userName} />
+          
+          <div className="header-content">
+            <UserMenu userName={userName} />
+          </div>
         </div>
       </header>
 

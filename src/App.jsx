@@ -5,6 +5,8 @@ import Layout from './components/Layout/Layout'
 import './index.css'
 import Home from './pages/Home/Home'
 import UsersApprove from './pages/UsersApprove/UsersApprove'
+import AwaitingApprove from './pages/AwaitingApprove/AwaitingApprove'
+import PrivateRoute from './components/Private/PrivateRoute'
 
 function App() {
   return (
@@ -12,13 +14,15 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
+        <Route path="/aguardando-aprovacao" element={<AwaitingApprove />} />
         
-        <Route element={<Layout />}>
-          <Route path="/home" element={<Home />} />
-          <Route path="/users-approve" element={<UsersApprove />} />
-
+        <Route element={<PrivateRoute />}>
+          <Route element={<Layout />}>
+            <Route path="/home" element={<Home />} />
+            <Route path="/users-approve" element={<UsersApprove />} />
+          </Route>
         </Route>
+
       </Routes>
     </Router>
   )

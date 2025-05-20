@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Container, 
   Row, 
@@ -9,7 +9,9 @@ import {
   FormGroup, 
   Label, 
   Input, 
-  Button 
+  Button,
+  Progress,
+  Alert
 } from "reactstrap";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -21,58 +23,125 @@ import {
   faBuilding, 
   faUsers, 
   faMapMarkerAlt,
-  faRoad
+  faRoad,
+  faLock,
+  faCheckCircle,
+  faEdit,
+  faExclamationTriangle
 } from "@fortawesome/free-solid-svg-icons";
 import ParticlesBackground from "../../components/Particles/ParticlesBackground";
 import "../Login/Login.css";
+import { getCompaniesWithBranches, getAllDepartments, getCompanyDepartments, registerUser } from "../../services/Consults";
 
-// Listas de opções
-const EMPRESAS = ["Knapp - Rua Brasilia", "Knapp - Rua Brasilia", "Smart-Trans", "Faculdade das Industrias"];
-const SETORES = ["Administrativo", "Comercial", "Financeiro", "Logística", "RH", "TI", "Produção", "Outro"];
-const FILIAIS = ["Matriz", "Filial SP", "Filial RJ", "Filial MG", "Filial RS", "Filial PR"];
 const UFS = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    nome: "", email: "", cpf: "", setor: "", empresa: "", filial: "",
-    telefone: "", uf: "", endereco: "", numero: "", cep: ""
+    nome: "", email: "", cpf: "", telefone: "", password: "", confirmPassword: "",
+    empresa: "", filial: "", setor: "", uf: "", endereco: "", numero: "", cep: ""
   });
 
-  // Função para formatar CPF
-  const formatCPF = (value) => {
-    const nums = value.replace(/\D/g, '').slice(0, 11);
-    
-    if (nums.length <= 3) return nums;
-    if (nums.length <= 6) return `${nums.slice(0, 3)}.${nums.slice(3)}`;
-    if (nums.length <= 9) return `${nums.slice(0, 3)}.${nums.slice(3, 6)}.${nums.slice(6)}`;
-    
-    return `${nums.slice(0, 3)}.${nums.slice(3, 6)}.${nums.slice(6, 9)}-${nums.slice(9)}`;
-  };
+  const [companies, setCompanies] = useState([]);
+  const [allDepartments, setAllDepartments] = useState([]);
+  const [availableDepartments, setAvailableDepartments] = useState([]);
+  const [branches, setBranches] = useState([]);
+  const [loading, setLoading] = useState({
+    companies: false,
+    departments: false
+  });
+  const [errors, setErrors] = useState({});
+  const [submitStatus, setSubmitStatus] = useState(null);
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
 
-  // Função para formatar telefone
-  const formatPhone = (value) => {
-    const nums = value.replace(/\D/g, '').slice(0, 11);
+  // Carrega empresas e departamentos ao montar o componente
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        setLoading(prev => ({...prev, companies: true}));
+        
+        // Carrega empresas e departamentos em paralelo
+        const [companiesData, departmentsData] = await Promise.all([
+          getCompaniesWithBranches(),
+          getAllDepartments()
+        ]);
+        
+        setCompanies(companiesData);
+        setAllDepartments(departmentsData);
+      } catch (error) {
+        console.error("Erro ao carregar dados iniciais:", error);
+      } finally {
+        setLoading(prev => ({...prev, companies: false}));
+      }
+    };
     
-    if (nums.length === 0) return '';
-    if (nums.length <= 2) return `(${nums}`;
-    if (nums.length <= 6) return `(${nums.slice(0, 2)}) ${nums.slice(2)}`;
-    if (nums.length <= 10) return `(${nums.slice(0, 2)}) ${nums.slice(2, 6)}-${nums.slice(6)}`;
-    
-    return `(${nums.slice(0, 2)}) ${nums.slice(2, 7)}-${nums.slice(7)}`;
-  };
+    loadInitialData();
+  }, []);
 
-  // Função para formatar CEP
-  const formatCEP = (value) => {
-    const nums = value.replace(/\D/g, '').slice(0, 8);
+  // Atualiza branches quando empresa é selecionada
+  useEffect(() => {
+    if (formData.empresa) {
+      const selectedCompany = companies.find(c => c.id.toString() === formData.empresa);
+      if (selectedCompany) {
+        setBranches(selectedCompany.branches || []);
+        setFormData(prev => ({...prev, filial: "", setor: ""}));
+      }
+    } else {
+      setBranches([]);
+    }
+  }, [formData.empresa, companies]);
+
+  // Atualiza departamentos disponíveis quando empresa ou filial muda
+  useEffect(() => {
+    const loadCompanyDepartments = async () => {
+      if (formData.empresa && formData.filial) {
+        try {
+          setLoading(prev => ({...prev, departments: true}));
+          
+          const companyDepts = await getCompanyDepartments(
+            parseInt(formData.empresa),
+            parseInt(formData.filial)
+          );
+          
+          // Filtra departamentos ativos e mapeia para o formato completo
+          const activeDeptIds = companyDepts
+            .filter(dept => dept.status === 1)
+            .map(dept => dept.departament_id);
+          
+          const filteredDepts = allDepartments.filter(dept => 
+            activeDeptIds.includes(dept.id)
+          );
+          
+          setAvailableDepartments(filteredDepts);
+        } catch (error) {
+          console.error("Erro ao carregar departamentos:", error);
+        } finally {
+          setLoading(prev => ({...prev, departments: false}));
+        }
+      } else {
+        setAvailableDepartments([]);
+      }
+    };
     
-    if (nums.length <= 5) return nums;
-    return `${nums.slice(0, 5)}-${nums.slice(5)}`;
-  };
+    loadCompanyDepartments();
+  }, [formData.empresa, formData.filial, allDepartments]);
+
+  // Funções de formatação CPF, TELL E CEP
+  const formatCPF = (value) => value.replace(/\D/g, '')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+
+  const formatPhone = (value) => value.replace(/\D/g, '')
+    .replace(/(\d{2})(\d)/, '($1) $2')
+    .replace(/(\d{5})(\d)/, '$1-$2');
+
+  const formatCEP = (value) => value.replace(/\D/g, '')
+    .replace(/(\d{5})(\d)/, '$1-$2');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     
-    // Aplica formatação específica
     if (name === 'cpf') {
       setFormData(prev => ({ ...prev, [name]: formatCPF(value) }));
     } else if (name === 'telefone') {
@@ -82,41 +151,535 @@ const Register = () => {
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
+
+    if (errors[name]) {
+      setErrors(prev => ({...prev, [name]: null}));
+    }
   };
 
-  const validateCPF = (cpf) => {
-    return cpf.length === 14; // 000.000.000-00
+  // Validações melhoradas com mensagens de erro
+  const validateField = (name, value) => {
+    switch(name) {
+      case 'nome':
+        if (!value) return "Nome completo é obrigatório";
+        if (value.length < 3) return "Nome muito curto";
+        return null;
+      case 'email':
+        if (!value) return "Email é obrigatório";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "Email inválido";
+        return null;
+      case 'cpf':
+        if (!value) return "CPF é obrigatório";
+        if (value.length !== 14) return "CPF inválido (000.000.000-00)";
+        return null;
+      case 'telefone':
+        if (!value) return "Telefone é obrigatório";
+        if (value.length < 14) return "Telefone inválido (00) 00000-0000";
+        return null;
+      case 'password':
+        if (!value) return "Senha é obrigatória";
+        if (value.length < 6) return "Senha deve ter pelo menos 6 caracteres";
+        return null;
+      case 'confirmPassword':
+        if (value !== formData.password) return "As senhas não coincidem";
+        return null;
+      case 'empresa':
+        if (!value) return "Empresa é obrigatória";
+        return null;
+      case 'setor':
+        if (!value) return "Setor é obrigatório";
+        return null;
+      case 'cep':
+        if (!value) return "CEP é obrigatório";
+        if (value.length !== 9) return "CEP inválido (00000-000)";
+        return null;
+      case 'endereco':
+        if (!value) return "Endereço é obrigatório";
+        return null;
+      case 'numero':
+        if (!value) return "Número é obrigatório";
+        return null;
+      case 'uf':
+        if (!value) return "UF é obrigatória";
+        return null;
+      default:
+        return null;
+    }
   };
 
-  const validatePhone = (phone) => {
-    return phone.length >= 14 && phone.length <= 15; // (00) 0000-0000 ou (00) 00000-0000
+  const validateStep = (step) => {
+    // Definimos os campos para cada passo
+    const stepFields = {
+      1: ['nome', 'email', 'cpf', 'telefone', 'password', 'confirmPassword'],
+      2: ['empresa', 'setor'],
+      3: ['cep', 'endereco', 'numero', 'uf']
+    };
+  
+    // Verificamos se o step existe no objeto
+    if (!stepFields[step]) {
+      console.error(`Step ${step} não encontrado`);
+      return false;
+    }
+  
+    const newErrors = {};
+    let isValid = true;
+  
+    // Usamos o operador opcional (?.) para segurança
+    stepFields[step]?.forEach(field => {
+      const error = validateField(field, formData[field]);
+      if (error) {
+        newErrors[field] = error;
+        isValid = false;
+      }
+    });
+  
+    setErrors(newErrors);
+    return isValid;
   };
 
-  const validateCEP = (cep) => {
-    return cep.length === 9; // 00000-000
+  const nextStep = () => {
+    setFormSubmitted(true);
+    if (validateStep(currentStep)) {
+      setCurrentStep(prev => prev + 1);
+      setFormSubmitted(false);
+    }
   };
 
-  const handleSubmit = (e) => {
+  const prevStep = () => {
+    setCurrentStep(prev => prev - 1);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validações finais
-    if (!validateCPF(formData.cpf)) {
-      alert("CPF inválido! Formato esperado: 000.000.000-00");
-      return;
+    try {
+      setSubmitStatus('loading');
+      
+      // Valida todos os passos antes de enviar
+      const isStep1Valid = validateStep(1);
+      const isStep2Valid = validateStep(2);
+      const isStep3Valid = validateStep(3);
+      
+      if (!isStep1Valid || !isStep2Valid || !isStep3Valid) {
+        setSubmitStatus(null);
+        setCurrentStep(1); // Volta para o primeiro passo com erros
+        return;
+      }
+  
+      // Prepara os dados no formato esperado pelo back-end
+      const userData = {
+        name: formData.nome,
+        cpf: formData.cpf.replace(/\D/g, ''),
+        phone_number: formData.telefone.replace(/\D/g, ''),
+        company_id: parseInt(formData.empresa),
+        branch_id: parseInt(formData.filial),
+        uf: formData.uf,
+        endereco_detail: formData.endereco,
+        email: formData.email,
+        password: formData.password,
+        password_confirmation: formData.confirmPassword,
+        numero: formData.numero,
+        cep: formData.cep.replace(/\D/g, '')
+      };
+  
+      console.log("Dados sendo enviados:", userData);
+      
+      // Chama a função de registro
+      await registerUser(userData);
+      
+      setSubmitStatus('success');
+    } catch (error) {
+      console.error("Erro ao enviar formulário:", error);
+      setSubmitStatus('error');
+      
+      let errorMessage = "Ocorreu um erro ao enviar seus dados. Por favor, tente novamente.";
+      
+      if (error.response?.data?.errors) {
+        errorMessage = Object.values(error.response.data.errors).flat().join(', ');
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      
+      setErrors(prev => ({ ...prev, form: errorMessage }));
     }
-    
-    if (!validatePhone(formData.telefone)) {
-      alert("Telefone inválido! Formato esperado: (00) 00000-0000");
-      return;
-    }
-    
-    if (!validateCEP(formData.cep)) {
-      alert("CEP inválido! Formato esperado: 00000-000");
-      return;
-    }
+  };
 
-    console.log("Dados válidos:", formData);
-    // Lógica de envio aqui
+  // Renderização condicional dos steps
+  const renderStep = () => {
+    switch(currentStep) {
+      case 1:
+        return (
+          <>
+            <h4 className="mb-4 text-center"><FontAwesomeIcon icon={faUser} className="me-2" />Dados Pessoais</h4>
+            
+            <FormGroup>
+              <Label><FontAwesomeIcon icon={faUser} className="me-2" />Nome Completo*</Label>
+              <Input 
+                type="text" 
+                name="nome" 
+                value={formData.nome} 
+                onChange={handleChange} 
+                invalid={!!errors.nome}
+                className="form-input"
+              />
+              {errors.nome && <small className="text-danger d-block mt-1">
+                <FontAwesomeIcon icon={faExclamationTriangle} className="me-1" />
+                {errors.nome}
+              </small>}
+            </FormGroup>
+
+            <FormGroup>
+              <Label><FontAwesomeIcon icon={faEnvelope} className="me-2" />Email*</Label>
+              <Input 
+                type="email" 
+                name="email" 
+                value={formData.email} 
+                onChange={handleChange} 
+                invalid={!!errors.email}
+                className="form-input"
+              />
+              {errors.email && <small className="text-danger d-block mt-1">
+                <FontAwesomeIcon icon={faExclamationTriangle} className="me-1" />
+                {errors.email}
+              </small>}
+            </FormGroup>
+
+            <Row>
+              <Col md={6}>
+                <FormGroup>
+                  <Label><FontAwesomeIcon icon={faIdCard} className="me-2" />CPF*</Label>
+                  <Input 
+                    type="text" 
+                    name="cpf" 
+                    value={formData.cpf} 
+                    onChange={handleChange} 
+                    invalid={!!errors.cpf}
+                    className="form-input"
+                    placeholder="000.000.000-00"
+                    maxLength="14"
+                  />
+                  {errors.cpf && <small className="text-danger d-block mt-1">
+                    <FontAwesomeIcon icon={faExclamationTriangle} className="me-1" />
+                    {errors.cpf}
+                  </small>}
+                </FormGroup>
+              </Col>
+              <Col md={6}>
+                <FormGroup>
+                  <Label><FontAwesomeIcon icon={faPhone} className="me-2" />Telefone*</Label>
+                  <Input 
+                    type="tel" 
+                    name="telefone" 
+                    value={formData.telefone} 
+                    onChange={handleChange} 
+                    invalid={!!errors.telefone}
+                    className="form-input"
+                    placeholder="(00) 00000-0000"
+                    maxLength="15"
+                  />
+                  {errors.telefone && <small className="text-danger d-block mt-1">
+                    <FontAwesomeIcon icon={faExclamationTriangle} className="me-1" />
+                    {errors.telefone}
+                  </small>}
+                </FormGroup>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={6}>
+                <FormGroup>
+                  <Label><FontAwesomeIcon icon={faLock} className="me-2" />Senha*</Label>
+                  <Input 
+                    type="password" 
+                    name="password" 
+                    value={formData.password} 
+                    onChange={handleChange} 
+                    invalid={!!errors.password}
+                    className="form-input"
+                  />
+                  {errors.password && <small className="text-danger d-block mt-1">
+                    <FontAwesomeIcon icon={faExclamationTriangle} className="me-1" />
+                    {errors.password}
+                  </small>}
+                </FormGroup>
+              </Col>
+              <Col md={6}>
+                <FormGroup>
+                  <Label><FontAwesomeIcon icon={faLock} className="me-2" />Confirmar Senha*</Label>
+                  <Input 
+                    type="password" 
+                    name="confirmPassword" 
+                    value={formData.confirmPassword} 
+                    onChange={handleChange} 
+                    invalid={!!errors.confirmPassword}
+                    className="form-input"
+                  />
+                  {errors.confirmPassword && <small className="text-danger d-block mt-1">
+                    <FontAwesomeIcon icon={faExclamationTriangle} className="me-1" />
+                    {errors.confirmPassword}
+                  </small>}
+                </FormGroup>
+              </Col>
+            </Row>
+          </>
+        );
+      case 2:
+        return (
+          <>
+            <h4 className="mb-4 text-center"><FontAwesomeIcon icon={faBuilding} className="me-2" />Dados Profissionais</h4>
+            
+            <FormGroup>
+              <Label><FontAwesomeIcon icon={faBuilding} className="me-2" />Empresa*</Label>
+              <Input 
+                type="select" 
+                name="empresa" 
+                value={formData.empresa} 
+                onChange={handleChange} 
+                invalid={!!errors.empresa}
+                className="form-input"
+                disabled={loading.companies}
+              >
+                <option value="">Selecione</option>
+                {companies.map(company => (
+                  <option key={company.id} value={company.id}>
+                    {company.name}
+                  </option>
+                ))}
+              </Input>
+              {loading.companies && <small>Carregando empresas...</small>}
+              {errors.empresa && <small className="text-danger d-block mt-1">
+                <FontAwesomeIcon icon={faExclamationTriangle} className="me-1" />
+                {errors.empresa}
+              </small>}
+            </FormGroup>
+
+            <Row>
+              <Col md={6}>
+                <FormGroup>
+                  <Label><FontAwesomeIcon icon={faMapMarkerAlt} className="me-2" />Filial</Label>
+                  <Input 
+                    type="select" 
+                    name="filial" 
+                    value={formData.filial} 
+                    onChange={handleChange}
+                    className="form-input"
+                    disabled={!formData.empresa || branches.length === 0}
+                  >
+                    <option value="">Selecione</option>
+                    {branches.map(branch => (
+                      <option key={branch.id} value={branch.id}>
+                        {branch.name}
+                      </option>
+                    ))}
+                  </Input>
+                  {formData.empresa && branches.length === 0 && (
+                    <small className="text-muted">Nenhuma filial disponível para esta empresa</small>
+                  )}
+                </FormGroup>
+              </Col>
+              <Col md={6}>
+                <FormGroup>
+                  <Label><FontAwesomeIcon icon={faUsers} className="me-2" />Setor*</Label>
+                  <Input 
+                    type="select" 
+                    name="setor" 
+                    value={formData.setor} 
+                    onChange={handleChange} 
+                    invalid={!!errors.setor}
+                    className="form-input"
+                    disabled={loading.departments || !formData.filial}
+                  >
+                    <option value="">Selecione</option>
+                    {availableDepartments.map(dept => (
+                      <option key={dept.id} value={dept.id}>
+                        {dept.title}
+                      </option>
+                    ))}
+                  </Input>
+                  {loading.departments && <small>Carregando setores...</small>}
+                  {errors.setor && <small className="text-danger d-block mt-1">
+                    <FontAwesomeIcon icon={faExclamationTriangle} className="me-1" />
+                    {errors.setor}
+                  </small>}
+                </FormGroup>
+              </Col>
+            </Row>
+          </>
+        );
+      case 3:
+        return (
+          <>
+            <h4 className="mb-4 text-center"><FontAwesomeIcon icon={faMapMarkerAlt} className="me-2" />Endereço</h4>
+            
+            <Row>
+              <Col md={4}>
+                <FormGroup>
+                  <Label><FontAwesomeIcon icon={faEnvelope} className="me-2" />CEP*</Label>
+                  <Input 
+                    type="text" 
+                    name="cep" 
+                    value={formData.cep} 
+                    onChange={handleChange} 
+                    invalid={!!errors.cep}
+                    className="form-input"
+                    placeholder="00000-000"
+                    maxLength="9"
+                  />
+                  {errors.cep && <small className="text-danger d-block mt-1">
+                    <FontAwesomeIcon icon={faExclamationTriangle} className="me-1" />
+                    {errors.cep}
+                  </small>}
+                </FormGroup>
+              </Col>
+              <Col md={4}>
+                <FormGroup>
+                  <Label>Número*</Label>
+                  <Input 
+                    type="text" 
+                    name="numero" 
+                    value={formData.numero} 
+                    onChange={handleChange} 
+                    invalid={!!errors.numero}
+                    className="form-input"
+                  />
+                  {errors.numero && <small className="text-danger d-block mt-1">
+                    <FontAwesomeIcon icon={faExclamationTriangle} className="me-1" />
+                    {errors.numero}
+                  </small>}
+                </FormGroup>
+              </Col>
+              <Col md={4}>
+                <FormGroup>
+                  <Label>UF*</Label>
+                  <Input 
+                    type="select" 
+                    name="uf" 
+                    value={formData.uf} 
+                    onChange={handleChange} 
+                    invalid={!!errors.uf}
+                    className="form-input"
+                  >
+                    <option value="">Selecione</option>
+                    {UFS.map(uf => <option key={uf} value={uf}>{uf}</option>)}
+                  </Input>
+                  {errors.uf && <small className="text-danger d-block mt-1">
+                    <FontAwesomeIcon icon={faExclamationTriangle} className="me-1" />
+                    {errors.uf}
+                  </small>}
+                </FormGroup>
+              </Col>
+            </Row>
+
+            <FormGroup>
+              <Label><FontAwesomeIcon icon={faRoad} className="me-2" />Endereço*</Label>
+              <Input 
+                type="text" 
+                name="endereco" 
+                value={formData.endereco} 
+                onChange={handleChange} 
+                invalid={!!errors.endereco}
+                className="form-input"
+              />
+              {errors.endereco && <small className="text-danger d-block mt-1">
+                <FontAwesomeIcon icon={faExclamationTriangle} className="me-1" />
+                {errors.endereco}
+              </small>}
+            </FormGroup>
+          </>
+        );
+        case 4:
+          return (
+            <>
+              <h4 className="mb-4 text-center">
+                <FontAwesomeIcon icon={faCheckCircle} className="me-2" />
+                Revisão dos Dados
+              </h4>
+
+              {!formData.empresa || !formData.filial || !formData.setor ? (
+                <Alert color="warning" className="text-center">
+                  <h4 className="alert-heading">Dados incompletos</h4>
+                  <p>Por favor, volte e complete todas as informações necessárias.</p>
+                  <Button color="warning" onClick={() => setCurrentStep(1)}>
+                    Voltar para correção
+                  </Button>
+                </Alert>
+              ) : submitStatus === 'success' ? (
+                <Alert color="success" className="text-center">
+                  <h4 className="alert-heading">Cadastro realizado com sucesso!</h4>
+                  <p>Seu registro foi enviado para aprovação.</p>
+                  <Link to="/login" className="btn btn-success">
+                    Ir para Login
+                  </Link>
+                </Alert>
+              ) : submitStatus === 'error' ? (
+                <Alert color="danger" className="text-center">
+                  <h4 className="alert-heading">Erro no cadastro</h4>
+                  <p>{errors.form || "Ocorreu um erro ao enviar seus dados. Por favor, tente novamente."}</p>
+                  <Button color="danger" onClick={() => setSubmitStatus(null)}>
+                    Tentar novamente
+                  </Button>
+                </Alert>
+              ) : (
+                <>
+                  <Card className="mb-4">
+                    <CardBody>
+                      <h5><FontAwesomeIcon icon={faUser} className="me-2" />Dados Pessoais</h5>
+                      <p><strong>Nome:</strong> {formData.nome}</p>
+                      <p><strong>Email:</strong> {formData.email}</p>
+                      <p><strong>CPF:</strong> {formData.cpf}</p>
+                      <p><strong>Telefone:</strong> {formData.telefone}</p>
+                      
+                      <Button color="link" size="sm" onClick={() => setCurrentStep(1)}>
+                        <FontAwesomeIcon icon={faEdit} className="me-1" /> Editar
+                      </Button>
+                    </CardBody>
+                  </Card>
+
+                  <Card className="mb-4">
+                    <CardBody>
+                      <h5><FontAwesomeIcon icon={faBuilding} className="me-2" />Dados Profissionais</h5>
+                      <p><strong>Empresa:</strong> {companies.find(c => c.id.toString() === formData.empresa)?.name || 'Não informado'}</p>
+                      <p><strong>Filial:</strong> {branches.find(b => b.id.toString() === formData.filial)?.name || 'Não informado'}</p>
+                      <p><strong>Setor:</strong> {availableDepartments.find(d => d.id.toString() === formData.setor)?.title || 'Não informado'}</p>
+                      
+                      <Button color="link" size="sm" onClick={() => setCurrentStep(2)}>
+                        <FontAwesomeIcon icon={faEdit} className="me-1" /> Editar
+                      </Button>
+                    </CardBody>
+                  </Card>
+
+                  <Card className="mb-4">
+                    <CardBody>
+                      <h5><FontAwesomeIcon icon={faMapMarkerAlt} className="me-2" />Endereço</h5>
+                      <p><strong>CEP:</strong> {formData.cep}</p>
+                      <p><strong>Endereço:</strong> {formData.endereco}, {formData.numero}</p>
+                      <p><strong>UF:</strong> {formData.uf}</p>
+                      
+                      <Button color="link" size="sm" onClick={() => setCurrentStep(3)}>
+                        <FontAwesomeIcon icon={faEdit} className="me-1" /> Editar
+                      </Button>
+                    </CardBody>
+                  </Card>
+
+                  <div className="d-flex justify-content-between mt-4">
+                    <Button color="secondary" onClick={prevStep}>
+                      Voltar
+                    </Button>
+                    <Button 
+                      color="primary" 
+                      onClick={handleSubmit}
+                      disabled={submitStatus === 'loading'}
+                    >
+                      {submitStatus === 'loading' ? 'Enviando...' : 'Confirmar Cadastro'}
+                    </Button>
+                  </div>
+                </>
+              )}
+            </>
+          );
+      default:
+        return null;
+    }
   };
 
   return (
@@ -129,7 +692,6 @@ const Register = () => {
             <Card className="shadow-sm register-card">
               <CardBody className="p-4 d-flex flex-column">
                 
-                {/* Cabeçalho fixo */}
                 <div className="mb-4 text-center">
                   <img
                     src="/knapp_logo.svg.png"
@@ -138,213 +700,52 @@ const Register = () => {
                     style={{ maxWidth: "160px" }}
                   />
                   <h2 className="text-center mb-3 register-title">Solicitação de Registro</h2>
+                  
+                  {currentStep < 4 && (
+                    <>
+                      <Progress 
+                        value={(currentStep / 3) * 100} 
+                        color="warning" 
+                        className="mb-3"
+                      />
+                      <p className="text-muted">Passo {currentStep} de 3</p>
+                    </>
+                  )}
                 </div>
 
-                {/* Área rolável */}
                 <div className="register-scroll-container">
                   <Form onSubmit={handleSubmit}>
-                    {/* Grupo 1 - Dados Pessoais */}
-                    <fieldset className="form-section mb-4">
-                      <legend className="form-section-title">Dados Pessoais</legend>
-                      
-                      <FormGroup>
-                        <Label><FontAwesomeIcon icon={faUser} className="me-2" />Nome Completo*</Label>
-                        <Input 
-                          type="text" 
-                          name="nome" 
-                          value={formData.nome} 
-                          onChange={handleChange} 
-                          required 
-                          className="form-input"
-                        />
-                      </FormGroup>
-
-                      <FormGroup>
-                        <Label><FontAwesomeIcon icon={faEnvelope} className="me-2" />Email*</Label>
-                        <Input 
-                          type="email" 
-                          name="email" 
-                          value={formData.email} 
-                          onChange={handleChange} 
-                          required 
-                          className="form-input"
-                        />
-                      </FormGroup>
-
-                      <Row>
-                        <Col md={6}>
-                          <FormGroup>
-                            <Label><FontAwesomeIcon icon={faIdCard} className="me-2" />CPF*</Label>
-                            <Input 
-                              type="text" 
-                              name="cpf" 
-                              value={formData.cpf} 
-                              onChange={handleChange} 
-                              required 
-                              className="form-input"
-                              placeholder="000.000.000-00"
-                              maxLength="14"
-                            />
-                            {formData.cpf && !validateCPF(formData.cpf) && (
-                              <small className="text-danger">Formato inválido (000.000.000-00)</small>
-                            )}
-                          </FormGroup>
-                        </Col>
-                        <Col md={6}>
-                          <FormGroup>
-                            <Label><FontAwesomeIcon icon={faPhone} className="me-2" />Telefone*</Label>
-                            <Input 
-                              type="tel" 
-                              name="telefone" 
-                              value={formData.telefone} 
-                              onChange={handleChange} 
-                              required 
-                              className="form-input"
-                              placeholder="(00) 00000-0000"
-                              maxLength="15"
-                            />
-                            {formData.telefone && !validatePhone(formData.telefone) && (
-                              <small className="text-danger">Formato inválido (00) 00000-0000</small>
-                            )}
-                          </FormGroup>
-                        </Col>
-                      </Row>
-                    </fieldset>
-
-                    {/* Grupo 2 - Dados Profissionais */}
-                    <fieldset className="form-section mb-4">
-                      <legend className="form-section-title">Dados Profissionais</legend>
-                      
-                      <FormGroup>
-                        <Label><FontAwesomeIcon icon={faBuilding} className="me-2" />Empresa*</Label>
-                        <Input 
-                          type="select" 
-                          name="empresa" 
-                          value={formData.empresa} 
-                          onChange={handleChange} 
-                          required
-                          className="form-input"
+                    {renderStep()}
+                    
+                    {currentStep < 4 && (
+                      <div className="d-flex justify-content-between mt-4">
+                        {currentStep > 1 ? (
+                          <Button color="secondary" onClick={prevStep}>
+                            Voltar
+                          </Button>
+                        ) : (
+                          <div></div>
+                        )}
+                        
+                        <Button 
+                          color="primary" 
+                          onClick={nextStep}
                         >
-                          <option value="">Selecione</option>
-                          {EMPRESAS.map(empresa => <option key={empresa} value={empresa}>{empresa}</option>)}
-                        </Input>
-                      </FormGroup>
-
-                      <Row>
-                        <Col md={6}>
-                          <FormGroup>
-                            <Label><FontAwesomeIcon icon={faUsers} className="me-2" />Setor*</Label>
-                            <Input 
-                              type="select" 
-                              name="setor" 
-                              value={formData.setor} 
-                              onChange={handleChange} 
-                              required
-                              className="form-input"
-                            >
-                              <option value="">Selecione</option>
-                              {SETORES.map(setor => <option key={setor} value={setor}>{setor}</option>)}
-                            </Input>
-                          </FormGroup>
-                        </Col>
-                        <Col md={6}>
-                          <FormGroup>
-                            <Label><FontAwesomeIcon icon={faMapMarkerAlt} className="me-2" />Filial</Label>
-                            <Input 
-                              type="select" 
-                              name="filial" 
-                              value={formData.filial} 
-                              onChange={handleChange}
-                              className="form-input"
-                            >
-                              <option value="">Selecione</option>
-                              {FILIAIS.map(filial => <option key={filial} value={filial}>{filial}</option>)}
-                            </Input>
-                          </FormGroup>
-                        </Col>
-                      </Row>
-                    </fieldset>
-
-                    {/* Grupo 3 - Endereço */}
-                    <fieldset className="form-section mb-4">
-                      <legend className="form-section-title">Endereço</legend>
-                      
-                      <Row>
-                        <Col md={4}>
-                          <FormGroup>
-                            <Label><FontAwesomeIcon icon={faEnvelope} className="me-2" />CEP*</Label>
-                            <Input 
-                              type="text" 
-                              name="cep" 
-                              value={formData.cep} 
-                              onChange={handleChange} 
-                              required
-                              className="form-input"
-                              placeholder="00000-000"
-                              maxLength="9"
-                            />
-                            {formData.cep && !validateCEP(formData.cep) && (
-                              <small className="text-danger">Formato inválido (00000-000)</small>
-                            )}
-                          </FormGroup>
-                        </Col>
-                        <Col md={4}>
-                          <FormGroup>
-                            <Label>Número*</Label>
-                            <Input 
-                              type="text" 
-                              name="numero" 
-                              value={formData.numero} 
-                              onChange={handleChange} 
-                              required
-                              className="form-input"
-                            />
-                          </FormGroup>
-                        </Col>
-                        <Col md={4}>
-                          <FormGroup>
-                            <Label>UF*</Label>
-                            <Input 
-                              type="select" 
-                              name="uf" 
-                              value={formData.uf} 
-                              onChange={handleChange} 
-                              required
-                              className="form-input"
-                            >
-                              <option value="">Selecione</option>
-                              {UFS.map(uf => <option key={uf} value={uf}>{uf}</option>)}
-                            </Input>
-                          </FormGroup>
-                        </Col>
-                      </Row>
-
-                      <FormGroup>
-                        <Label><FontAwesomeIcon icon={faRoad} className="me-2" />Endereço*</Label>
-                        <Input 
-                          type="text" 
-                          name="endereco" 
-                          value={formData.endereco} 
-                          onChange={handleChange} 
-                          required
-                          className="form-input"
-                        />
-                      </FormGroup>
-                    </fieldset>
-
-                    <Button type="submit" block className="mt-4 mb-3 btn-yellow">
-                      Solicitar Registro
-                    </Button>
+                          {currentStep === 3 ? 'Revisar Dados' : 'Próximo'}
+                        </Button>
+                      </div>
+                    )}
                   </Form>
                 </div>
 
-                {/* Rodapé fixo */}
-                <div className="text-center small pt-2 register-footer">
-                  <span className="text-muted">Já possui uma conta? </span>
-                  <Link to="/login" className="register-link">
-                    Faça login aqui
-                  </Link>
-                </div>
+                {currentStep < 4 && (
+                  <div className="text-center small pt-2 register-footer">
+                    <span className="text-muted">Já possui uma conta? </span>
+                    <Link to="/login" className="register-link">
+                      Faça login aqui
+                    </Link>
+                  </div>
+                )}
               </CardBody>
             </Card>
           </Col>
