@@ -1,6 +1,6 @@
 :root {
-  --primary-color: #FFD700; /* Cor amarela padrão */
-  --active-color: rgba(255, 215, 0, 0.1); /* Amarelo mais suave para hover e seleção */
+  --primary-color: #FFD700; 
+  --active-color: rgba(255, 215, 0, 0.1); 
   --sidebar-width: 15%;
   --content-width: 80%;
   --header-height: 60px;
@@ -23,7 +23,7 @@
   display: flex;
   align-items: center;
   padding: 0 20px;
-  justify-content: space-between; /* espaça logo e menu */
+  justify-content: space-between; 
 }
 
 .header-wrapper {
@@ -36,13 +36,11 @@
 .logo-container {
   display: flex;
   align-items: center;
-  /* Sem padding ou margin, para colar na borda esquerda da tela */
 }
 
 .header-content {
   max-width: 1200px;
-  margin-left: auto; /* empurra o menu pra direita */
-  /* sem padding para não limitar a largura */
+  margin-left: auto;
 }
 
 .layout-logo {
@@ -58,7 +56,8 @@
 .layout-sidebar {
   width: var(--sidebar-width);
   background-color: white;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+  box-shadow: none;
+  border-right: 1px solid #e0e0e0;
   padding: 20px 0;
 }
 
@@ -101,7 +100,8 @@
 .layout-content {
   width: var(--content-width);
   padding: 30px;
-  background-color: #f8f9fa;
+  background-color: white;
+  border-left: 1px solid #e0e0e0;
   overflow-y: auto;
   max-height: calc(100vh - var(--header-height));
 }
@@ -144,7 +144,7 @@
 }
 
 .submenu {
-  padding-left: 25px; /* Deixe mais afastado à direita */
+  padding-left: 25px; 
   margin-top: 5px;
   transition: all 0.3s ease;
 }
@@ -155,17 +155,17 @@
 }
 
 .submenu .nav-item.active {
-  background-color: var(--active-color); /* Fundo amarelado mais suave */
+  background-color: var(--active-color);
   border-right: 3px solid var(--primary-color);
 }
 
 .nav-item:hover {
-  background-color: var(--active-color); /* Deixa o fundo mais suave ao passar o mouse */
+  background-color: var(--active-color); 
 }
 
 .nav-item.active {
-  color: var(--primary-color); /* Amarelo padrão */
-  background-color: var(--active-color); /* Mesmo tom amarelado mais suave */
+  color: var(--primary-color);
+  background-color: var(--active-color); 
   border-right: 3px solid var(--primary-color);
   font-weight: 600;
 }
@@ -173,7 +173,8 @@
 .layout-sidebar {
   width: var(--sidebar-width);
   background-color: white;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+  box-shadow: none;
+  border-right: none; 
   padding: 20px 0;
 }
 
