@@ -52,7 +52,6 @@ const Layout = () => {
                   </NavLink>
                 </li>
               ))}
-              
             </ul>
           </nav>
         </aside>

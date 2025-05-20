@@ -17,7 +17,7 @@ const CompanyMenu = () => {
     <>
       <li onClick={toggleMenu} className={`nav-item ${isUsersSection ? "active" : ""}`} style={{ cursor: "pointer" }}>
         <span className="nav-icon"><FaUsers /></span>
-        Usuários
+        Empresa
         <span style={{ marginLeft: "auto" }}>
           {isOpen ? <FaChevronDown size={12} /> : <FaChevronRight size={12} />}
         </span>
@@ -27,20 +27,21 @@ const CompanyMenu = () => {
         <ul className="submenu submenu-shadow">          
           <li>
             <NavLink 
-              to="/users/edit"
+              to="/company"
+              CompanyPage
               className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
             >
               <span className="nav-icon user-option-special"><FaUserEdit /></span>
-              Editar
+              Principal
             <span className="user-option-separator"></span></NavLink>
           </li>
           <li>
             <NavLink 
-              to="/users-approve"
+              to="/branch"
               className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
             >
               <span className="nav-icon user-option-special"><FaUserCheck /></span>
-              Aprovar
+              Filiais
             <span className="user-option-separator"></span></NavLink>
           </li>
         </ul>
