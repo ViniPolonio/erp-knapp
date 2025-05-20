@@ -9,3 +9,13 @@
     margin-bottom: 10px;
     display: block;
 }
+
+.submenu-shadow {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    border-radius: 4px;
+    padding: 0.5rem;
+    margin-left: 1.5rem;
+    margin-top: 0.25rem;
+    transition: box-shadow 0.3s ease;
+  }

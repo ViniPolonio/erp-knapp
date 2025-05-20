@@ -1,5 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { FaCog } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import './UserMenu.css';
@@ -10,24 +11,39 @@ const UserMenu = ({ userName = "Vinícius" }) => {
   const [showPwdModal, setShowPwdModal] = useState(false);
   const navigate = useNavigate();
   const avatarRef = useRef(null);
-  const hideTimeout = useRef(null);
 
-  const userEmail = "teste@gmail.com";
+  const user = JSON.parse(sessionStorage.getItem("user"));
+  const userEmail = user?.email || "Usuário";
+
   const firstInitial = userName.charAt(0).toUpperCase();
 
-  const handleMouseEnter = () => {
-    clearTimeout(hideTimeout.current);
-    setShowPopover(true);
-    if (avatarRef.current) {
-      const { right } = avatarRef.current.getBoundingClientRect();
-      setPopoverLeft(right + 220 < window.innerWidth);
-    }
-  };
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        avatarRef.current &&
+        !avatarRef.current.contains(event.target)
+      ) {
+        setShowPopover(false);
+      }
+    };
 
-  const handleMouseLeave = () => {
-    hideTimeout.current = setTimeout(() => {
-      setShowPopover(false);
-    }, 200);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const togglePopover = () => {
+    setShowPopover((prev) => !prev);
+  
+    if (avatarRef.current) {
+      const rect = avatarRef.current.getBoundingClientRect();
+      const popoverWidth = 200; // igual ao .popover { width: 200px; }
+      const margin = 10;
+  
+      // se houver espaço à direita, coloca à direita; se não, coloca à esquerda
+      setPopoverLeft(rect.right + popoverWidth + margin < window.innerWidth);
+    }
   };
 
   const handleLogout = () => {
@@ -45,22 +61,17 @@ const UserMenu = ({ userName = "Vinícius" }) => {
 
   return (
     <>
-      <div className="user-profile">
-        <button
-          className="user-avatar"
-          ref={avatarRef}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        >
+      <div className="user-profile" ref={avatarRef}>
+        <div className="user-avatar">
           {firstInitial}
+        </div>
+
+        <button className="settings-button" onClick={togglePopover}>
+          <FaCog />
         </button>
 
         {showPopover && (
-          <div
-            className={`popover ${popoverLeft ? 'left' : 'right'}`}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
+          <div className={`popover ${popoverLeft ? 'left' : 'right'}`}>
             <div className="popover-content">
               <h4>Olá, {userName}!</h4>
               <div className="popover-buttons">

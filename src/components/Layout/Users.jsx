@@ -2,6 +2,7 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { FaUsers, FaChevronDown, FaChevronRight, FaUserPlus, FaUserEdit, FaUserCheck } from "react-icons/fa";
+import './Users.css';
 
 const UsersMenu = () => {
   const location = useLocation();
@@ -24,16 +25,7 @@ const UsersMenu = () => {
       </li>
 
       {isOpen && (
-        <ul className="submenu">
-          <li>
-            <NavLink 
-              to="/users/create"
-              className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
-            >
-              <span className="nav-icon user-option-special"><FaUserPlus /></span>
-              Criar
-            <span className="user-option-separator"></span></NavLink>
-          </li>
+        <ul className="submenu submenu-shadow">          
           <li>
             <NavLink 
               to="/users/edit"
