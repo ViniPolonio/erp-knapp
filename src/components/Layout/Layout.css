@@ -20,16 +20,29 @@
   position: sticky;
   top: 0;
   z-index: 100;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  justify-content: space-between; /* espaça logo e menu */
 }
 
-.header-content {
+.header-wrapper {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 100%;
-  padding: 0 20px;
+  width: 100%;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  /* Sem padding ou margin, para colar na borda esquerda da tela */
+}
+
+.header-content {
   max-width: 1200px;
-  margin: 0 auto;
+  margin-left: auto; /* empurra o menu pra direita */
+  /* sem padding para não limitar a largura */
 }
 
 .layout-logo {
