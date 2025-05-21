@@ -5,16 +5,17 @@ import Content from './content';
 import PageTitle from '../page-title';
 
 const CompanyPage = () => {
-  const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
+  const userData = JSON.parse(sessionStorage.getItem('user')) || {};
+
+  const companyData = userData.company || {};
 
   return (
     <PageWrap>
       <PageTitle>
-        Editar informações
+        Editar informações da empresa
       </PageTitle>
-
       <PageContent>
-        <Content user={userData} />
+        <Content user={userData} company={companyData} />
       </PageContent>
     </PageWrap>
   );
