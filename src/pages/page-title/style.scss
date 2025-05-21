@@ -1,0 +1,18 @@
+.dropdown-menu-triangle {
+    display: none;
+
+    .dropdown-triangle > .dropdown-menu > & {
+        display: block;
+    }
+}
+.page-title-text {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0rem 0 1rem -15px; /* -10px aqui vai aproximar da borda esquerda */
+    color: #222;
+  }
+  
+.rui-page-title .container-fluid {
+  padding-left: 5px;
+  padding-right: 5px;
+}

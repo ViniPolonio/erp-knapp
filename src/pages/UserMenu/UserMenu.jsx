@@ -47,6 +47,7 @@ const UserMenu = ({ userName = "Vinícius" }) => {
   };
 
   const handleLogout = () => {
+    sessionStorage.clear();
     navigate("/login");
   };
 

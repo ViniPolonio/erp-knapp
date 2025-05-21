@@ -1,12 +1,13 @@
 import { Outlet, NavLink } from "react-router-dom";
 import UserMenu from "../../pages/UserMenu/UserMenu";
 import './Layout.css';
-import UsersMenu from "./Users";
+import UsersMenu from "./User/Users";
 import { FaFolderOpen, FaChartLine } from "react-icons/fa";
+import CompanyMenu from "./Company/Company";
 
 const Layout = () => {
   const menuItems = [
-    { path: "/projects", name: "Projetos", icon: <FaFolderOpen /> },
+    { path: "/", name: "Projetos", icon: <FaFolderOpen /> },
     { path: "/reports", name: "Relatórios", icon: <FaChartLine /> }
   ];
 
@@ -31,7 +32,12 @@ const Layout = () => {
         <aside className="layout-sidebar">
           <nav className="sidebar-nav">
             <ul>
-              <UsersMenu />
+
+              {/* MENU CONFIG COMPANY */}
+              <CompanyMenu></CompanyMenu>
+
+              {/* MENU DE USUARIOS */}
+              <UsersMenu />  
 
               {menuItems.map((item) => (
                 <li key={item.path}>
