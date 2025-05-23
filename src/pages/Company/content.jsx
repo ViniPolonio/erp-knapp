@@ -64,7 +64,6 @@ const Content = ({ company, user }) => {
 
       const payload = { ...formData };
 
-      console.log("Payload:", payload);
 
       await axios.put(`${apiUrl}/api/knapp/v1/company/${companyId}`, payload, config);
     } catch (err) {

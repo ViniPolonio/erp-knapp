@@ -9,6 +9,9 @@ import AwaitingApprove from './pages/AwaitingApprove/AwaitingApprove'
 import PrivateRoute from './components/Private/PrivateRoute'
 import CompanyPage from './pages/Company'; 
 import BranchPage from './pages/Branch'
+import ConsultUserPage from './pages/User/ConsultUserPage'
+import UsersApprovePage from './pages/UsersApprove/UsersApprove'
+
 function App() {
   return (
     <Router>
@@ -23,6 +26,9 @@ function App() {
             <Route path="/company" element={<CompanyPage />} />
             <Route path="/branch" element={<BranchPage />} />
             <Route path="/users-approve" element={<UsersApprove />} />
+            <Route path="/consult-users" element={<ConsultUserPage />} />
+            <Route path="/approve-users" element={<UsersApprovePage />} />
+
           </Route>
         </Route>
 
