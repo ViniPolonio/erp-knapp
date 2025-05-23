@@ -36,6 +36,7 @@ const UsersApprovePage = () => {
 
     setLoading(true);
     setError(null);
+    setSelectedUser(null); // Limpa o usuário selecionado ao buscar novos
 
     try {
       const response = await axios.get(
@@ -144,8 +145,9 @@ const UsersApprovePage = () => {
         showConfirmButton: false
       });
 
+      // Atualiza a lista de usuários pendentes
       await fetchPendingUsers();
-      setSelectedUser(null);
+      
     } catch (err) {
       await Swal.fire({
         icon: 'error',
@@ -175,12 +177,16 @@ const UsersApprovePage = () => {
           <Spinner animation="border" variant="primary" />
           <p className="mt-3">Buscando usuários pendentes de aprovação...</p>
         </div>
+      ) : error ? (
+        <div className="text-center">
+          {error}
+        </div>
       ) : pendingUsers.length === 0 ? (
         <div className="no-pending-users text-center py-5">
           <i className="bi bi-people fs-1 text-muted mb-3"></i>
           <h4 className="text-muted mb-3">Nenhum usuário pendente</h4>
           <p className="text-muted">
-            Não há usuários aguardando aprovação nesta momento.
+            Não há usuários aguardando aprovação nesta filial no momento.
           </p>
           <Button 
             variant="outline-primary" 

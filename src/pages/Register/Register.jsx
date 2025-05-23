@@ -273,13 +273,14 @@ const Register = () => {
         phone_number: formData.telefone.replace(/\D/g, ''),
         company_id: parseInt(formData.empresa),
         branch_id: parseInt(formData.filial),
+        departament_id: parseInt(formData.setor), // Corrigido aqui
         uf: formData.uf,
         endereco_detail: formData.endereco,
         email: formData.email,
         password: formData.password,
         password_confirmation: formData.confirmPassword,
         numero: formData.numero,
-        cep: formData.cep.replace(/\D/g, '')
+        cep: formData.cep.replace(/\D/g, ''),
       };
   
       console.log("Dados sendo enviados:", userData);
