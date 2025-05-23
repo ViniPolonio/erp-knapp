@@ -27,13 +27,14 @@ const UsersMenu = () => {
       {isOpen && (
         <ul className="submenu submenu-shadow">          
           <li>
-            <NavLink 
-              to="/users/edit"
-              className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
-            >
-              <span className="nav-icon user-option-special"><FaUserEdit /></span>
-              Editar
-            <span className="user-option-separator"></span></NavLink>
+          <NavLink 
+            to="/consult-users"
+            className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
+          >
+            <span className="nav-icon user-option-special"><FaUserEdit /></span>
+            Consultar
+            <span className="user-option-separator"></span>
+          </NavLink>
           </li>
           <li>
             <NavLink 
@@ -41,7 +42,7 @@ const UsersMenu = () => {
               className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
             >
               <span className="nav-icon user-option-special"><FaUserCheck /></span>
-              Aprovar
+              Aprovar/Reprovar
             <span className="user-option-separator"></span></NavLink>
           </li>
         </ul>

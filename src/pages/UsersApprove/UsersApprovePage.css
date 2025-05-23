@@ -1,0 +1,71 @@
+  .approval-header {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1rem;
+  }
+  
+  .company-info {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+  }
+  
+  .user-select-container {
+    margin-bottom: 1.5rem;
+  }
+  
+  .user-detail-card {
+    margin-top: 2rem;
+    border: none;
+  }
+  
+  .user-info-item {
+    margin-bottom: 1.5rem;
+  }
+  
+  .info-label {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .info-value {
+    font-weight: 500;
+  }
+  
+  .action-btn {
+    min-width: 120px;
+  }
+  
+  .no-pending-users {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin: 2rem 0;
+    padding: 2rem;
+  }
+  
+  .loading-container {
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  /* Estilos para o select */
+  .user-select .select__control {
+    min-height: 44px;
+    border-radius: 8px;
+  }
+  
+  .user-select .select__control--is-focused {
+    border-color: #2684ff;
+    box-shadow: 0 0 0 1px #2684ff;
+  }
+  
+  .user-select .select__option--is-focused {
+    background-color: #e9ecef;
+  }
+  
+  .user-select .select__option--is-selected {
+    background-color: #2684ff;
+  }
