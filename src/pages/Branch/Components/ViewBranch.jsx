@@ -3,6 +3,7 @@ import axios from "axios";
 import { Card, Button, ButtonGroup, Modal } from "react-bootstrap";
 import Select from "react-select";
 import Swal from "sweetalert2";
+import UpdateDataUserModal from "./UpdateDataUser";
 
 const maskCPF = (cpf) => {
   if (!cpf) return "";
@@ -27,7 +28,6 @@ const maskEmail = (email) => {
 };
 
 const ViewBranch = ({ branchId, branches }) => {
-  console.log(branches);
   const [user, setUser] = useState(null);
   const [usersBranch, setUsersBranch] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
@@ -53,26 +53,7 @@ const ViewBranch = ({ branchId, branches }) => {
     label: branch.name,
   }));
 
-  useEffect(() => {
-    if (selectedUserData && cardRef.current) {
-      cardRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-      cardRef.current.focus();
-    }
-  }, [selectedUserData]);
-
-  useEffect(() => {
-    const userStr = sessionStorage.getItem("user");
-    if (!userStr) {
-      setError("Usuário não autenticado.");
-      return;
-    }
-    const userObj = JSON.parse(userStr);
-    setUser(userObj);
-
-    if (!userObj.is_admin) {
-      return;
-    }
-
+  const fetchUsersByBranch = () => {
     if (!branchId) {
       setError("Filial não selecionada.");
       return;
@@ -109,6 +90,29 @@ const ViewBranch = ({ branchId, branches }) => {
         setInfoMessage(null);
       })
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    if (selectedUserData && cardRef.current) {
+      cardRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      cardRef.current.focus();
+    }
+  }, [selectedUserData]);
+
+  useEffect(() => {
+    const userStr = sessionStorage.getItem("user");
+    if (!userStr) {
+      setError("Usuário não autenticado.");
+      return;
+    }
+    const userObj = JSON.parse(userStr);
+    setUser(userObj);
+
+    if (!userObj.is_admin) {
+      return;
+    }
+
+    fetchUsersByBranch();
   }, [branchId, apiUrl]);
 
   useEffect(() => {
@@ -424,6 +428,9 @@ const ViewBranch = ({ branchId, branches }) => {
                   title: "Sucesso",
                   text: "Filial alterada com sucesso!",
                 });
+
+                // Atualiza a lista de usuários após a mudança de filial
+                fetchUsersByBranch();
               } catch (error) {
                 console.error("Erro ao trocar filial:", error);
 
@@ -485,24 +492,24 @@ const ViewBranch = ({ branchId, branches }) => {
             </Button>
           </Modal.Footer>
         </Modal>
-  
-        {/* Modal Alterar Informações */}
-        <Modal show={showAlterarInfoModal} onHide={() => setShowAlterarInfoModal(false)}>
-          <Modal.Header closeButton>
-            <Modal.Title>Alterar Informações</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            Aqui você poderá implementar a lógica de alteração das informações do usuário.
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowAlterarInfoModal(false)}>
-              Fechar
-            </Button>
-          </Modal.Footer>
-        </Modal>
+
+          {/* Modal de edição de dados do usuário*/}
+          <UpdateDataUserModal 
+            show={showAlterarInfoModal}
+            onHide={() => setShowAlterarInfoModal(false)}
+            userData={selectedUserData}
+            onUpdateSuccess={() => {
+              // Recarrega os usuários após atualização
+              fetchUsersByBranch();
+              Swal.fire({
+                icon: "success",
+                title: "Sucesso!",
+                text: "Dados do usuário atualizados com sucesso!"
+              });
+            }}
+          />
       </div>
     );
   };
   
   export default ViewBranch;
-  
