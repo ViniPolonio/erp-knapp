@@ -85,8 +85,8 @@ const Content = () => {
 
       {selectedBranchId && !creatingBranch && (
         <Tabs defaultActiveKey="view" id="company-tabs" className="mb-3">
-          <Tab eventKey="view" title="Visualizar">
-            <ViewBranch branchId={selectedBranchId} />
+          <Tab eventKey="view" title="Usuários Vinculados">
+            <ViewBranch branchId={selectedBranchId} branches={branches} />
           </Tab>
           <Tab eventKey="edit" title="Editar">
             <EditBranch branchId={selectedBranchId} />

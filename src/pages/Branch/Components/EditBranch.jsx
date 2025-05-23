@@ -1,23 +1,37 @@
 import React, { useState, useEffect } from "react";
-import { Form, Button, Alert, Spinner, Toast, ToastContainer } from "react-bootstrap";
+import { Form, Button, Toast, ToastContainer, Spinner } from "react-bootstrap";
 import axios from "axios";
 import Swal from "sweetalert2";
 
 const apiUrl = import.meta.env.VITE_KNAPP_API;
 
-const formatPhone = (value) =>
-  value.replace(/\D/g, "").replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{5})(\d)/, "$1-$2");
-
-const formatCEP = (value) =>
-  value.replace(/\D/g, "").replace(/(\d{5})(\d)/, "$1-$2");
-
-const formatCNPJ = (value) =>
-  value
+const formatPhone = (value) => {
+  if (!value) return "";
+  return value
     .replace(/\D/g, "")
+    .slice(0, 11) // só 11 dígitos pra telefone (2 DDD + 9 número)
+    .replace(/(\d{2})(\d)/, "($1) $2")
+    .replace(/(\d{5})(\d{1,4})$/, "$1-$2");
+};
+
+const formatCEP = (value) => {
+  if (!value) return "";
+  return value
+    .replace(/\D/g, "")
+    .slice(0, 8) // só 8 dígitos no CEP
+    .replace(/(\d{5})(\d{1,3})$/, "$1-$2");
+};
+
+const formatCNPJ = (value) => {
+  if (!value) return "";
+  return value
+    .replace(/\D/g, "")
+    .slice(0, 14) // 14 dígitos do CNPJ
     .replace(/^(\d{2})(\d)/, "$1.$2")
     .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
     .replace(/\.(\d{3})(\d)/, ".$1/$2")
-    .replace(/(\d{4})(\d)/, "$1-$2");
+    .replace(/(\d{4})(\d{1,2})$/, "$1-$2");
+};
 
 const EditBranch = ({ branchId }) => {
   const token = sessionStorage.getItem("token");
@@ -29,7 +43,6 @@ const EditBranch = ({ branchId }) => {
   const [saving, setSaving] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState("success");
-
   const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
@@ -43,12 +56,19 @@ const EditBranch = ({ branchId }) => {
         });
 
         if (branchResp.data.success) {
-          const branch = branchResp.data.data;
+          let branch = branchResp.data.data;
+
+          // Formatando os campos para exibir já formatado
+          branch = {
+            ...branch,
+            cnpj: formatCNPJ(branch.cnpj || ""),
+            cep: formatCEP(branch.cep || ""),
+            phone_number: formatPhone(branch.phone_number || ""),
+          };
+
           setBranchData(branch);
 
-          const parsedDeps = branch.departaments_json
-            ? JSON.parse(branch.departaments_json)
-            : [];
+          const parsedDeps = branch.departaments_json ? JSON.parse(branch.departaments_json) : [];
           setDepartmentsStatus(parsedDeps);
         } else {
           showToastMessage("Não foi possível carregar os dados da filial.", "danger");
@@ -102,9 +122,7 @@ const EditBranch = ({ branchId }) => {
   };
 
   const removeDepartment = (departament_id) => {
-    setDepartmentsStatus(
-      departmentsStatus.filter((d) => d.departament_id !== departament_id)
-    );
+    setDepartmentsStatus(departmentsStatus.filter((d) => d.departament_id !== departament_id));
   };
 
   const addDepartment = (departament_id) => {
@@ -115,7 +133,7 @@ const EditBranch = ({ branchId }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     const result = await Swal.fire({
       title: "Confirmação",
       text: "Tem certeza que deseja alterar os dados da filial?",
@@ -124,27 +142,26 @@ const EditBranch = ({ branchId }) => {
       confirmButtonText: "Sim, salvar",
       cancelButtonText: "Cancelar",
     });
-  
+
     if (!result.isConfirmed) return;
-  
+
     setSaving(true);
     try {
       const payload = {
         ...branchData,
+        cnpj: branchData.cnpj.replace(/\D/g, ""),
+        cep: branchData.cep.replace(/\D/g, ""),
+        phone_number: branchData.phone_number.replace(/\D/g, ""),
         departaments_json: departmentsStatus,
       };
-  
-      const { data } = await axios.put(
-        `${apiUrl}/api/knapp/v1/branch/${branchId}`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        }
-      );
-  
+
+      const { data } = await axios.put(`${apiUrl}/api/knapp/v1/branch/${branchId}`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+
       if (data.success) {
         showToastMessage("Filial atualizada com sucesso!", "success");
       } else {
@@ -156,12 +173,13 @@ const EditBranch = ({ branchId }) => {
       setSaving(false);
     }
   };
-  
-  
 
   if (loading)
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ height: "60vh" }}>
+      <div
+        className="d-flex justify-content-center align-items-center"
+        style={{ height: "60vh" }}
+      >
         <Spinner animation="border" />
       </div>
     );
@@ -213,7 +231,7 @@ const EditBranch = ({ branchId }) => {
             name="cnpj"
             value={branchData.cnpj || ""}
             onChange={handleChange}
-            maxLength={18}
+            maxLength={18} // 14 dígitos + pontos, barra e hífen
           />
         </Form.Group>
 
@@ -234,7 +252,7 @@ const EditBranch = ({ branchId }) => {
             name="cep"
             value={branchData.cep || ""}
             onChange={handleChange}
-            maxLength={9}
+            maxLength={9} // 8 dígitos + hífen
           />
         </Form.Group>
 
@@ -245,7 +263,7 @@ const EditBranch = ({ branchId }) => {
             name="phone_number"
             value={branchData.phone_number || ""}
             onChange={handleChange}
-            maxLength={15}
+            maxLength={15} // formato (99) 99999-9999
           />
         </Form.Group>
 
@@ -277,47 +295,38 @@ const EditBranch = ({ branchId }) => {
             {linkedDepartments.map((dep) => (
               <div
                 key={dep.departament_id}
-                style={{
-                  border: "1px solid #ccc",
-                  borderRadius: "6px",
-                  padding: "6px 12px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  backgroundColor: dep.status === 1 ? "#d1e7dd" : "#f8d7da",
-                }}
+                className="d-flex align-items-center border rounded px-2 py-1"
               >
                 <span>{dep.title}</span>
                 <Form.Check
-                  type="checkbox"
+                  type="switch"
+                  id={`status-switch-${dep.departament_id}`}
                   checked={dep.status === 1}
                   onChange={() => toggleDepartmentStatus(dep.departament_id)}
-                  label="Ativo"
+                  className="mx-2"
                 />
                 <Button
-                  variant="outline-danger"
+                  variant="danger"
                   size="sm"
                   onClick={() => removeDepartment(dep.departament_id)}
                 >
-                  ×
+                  x
                 </Button>
               </div>
             ))}
           </div>
-        </Form.Group>
 
-        <Form.Group className="mb-3">
-          <Form.Label>Adicionar Departamento</Form.Label>
           <Form.Select
-            defaultValue=""
+            aria-label="Adicionar departamento"
+            className="mt-2"
             onChange={(e) => {
-              if (e.target.value) addDepartment(Number(e.target.value));
-              e.target.value = "";
+              if (e.target.value !== "") {
+                addDepartment(parseInt(e.target.value));
+                e.target.value = "";
+              }
             }}
           >
-            <option value="" disabled>
-              Selecione um departamento
-            </option>
+            <option value="">Adicionar departamento</option>
             {availableDepartments.map((dep) => (
               <option key={dep.id} value={dep.id}>
                 {dep.title}
@@ -327,7 +336,13 @@ const EditBranch = ({ branchId }) => {
         </Form.Group>
 
         <Button type="submit" disabled={saving}>
-          {saving ? "Salvando..." : "Salvar Alterações"}
+          {saving ? (
+            <>
+              <Spinner animation="border" size="sm" /> Salvando...
+            </>
+          ) : (
+            "Salvar"
+          )}
         </Button>
       </Form>
     </>

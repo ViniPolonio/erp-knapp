@@ -32,7 +32,7 @@ const CompanyMenu = () => {
               className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
             >
               <span className="nav-icon user-option-special"><FaUserEdit /></span>
-              Editar Informações
+              Companhia
             <span className="user-option-separator"></span></NavLink>
           </li>
           <li>
