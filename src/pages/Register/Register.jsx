@@ -53,6 +53,7 @@ const Register = () => {
   const [submitStatus, setSubmitStatus] = useState(null);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [loadingCEP, setLoadingCEP] = useState(false);
 
   // Carrega empresas e departamentos ao montar o componente
   useEffect(() => {
@@ -139,23 +140,43 @@ const Register = () => {
   const formatCEP = (value) => value.replace(/\D/g, '')
     .replace(/(\d{5})(\d)/, '$1-$2');
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+    const handleChange = async (e) => {
+      const { name, value } = e.target;
+      
+      if (name === 'cpf') {
+        setFormData(prev => ({ ...prev, [name]: formatCPF(value) }));
+      } else if (name === 'telefone') {
+        setFormData(prev => ({ ...prev, [name]: formatPhone(value) }));
+      } else if (name === 'cep') {
+        const formattedCEP = formatCEP(value);
+        setFormData(prev => ({ ...prev, [name]: formattedCEP }));
+        
+        // Quando o CEP estiver completo (9 caracteres com traço), faz a consulta
+        if (formattedCEP.length === 9) {
+          try {
+            setLoadingCEP(true);
+            const addressData = await fetchAddressFromCEP(formattedCEP);
+            if (addressData) {
+              setFormData(prev => ({
+                ...prev,
+                endereco: addressData.endereco,
+                uf: addressData.uf
+              }));
+            }
+          } catch (error) {
+            console.error("Erro ao buscar endereço:", error);
+          } finally {
+            setLoadingCEP(false);
+          }
+        }
+      } else {
+        setFormData(prev => ({ ...prev, [name]: value }));
+      }
     
-    if (name === 'cpf') {
-      setFormData(prev => ({ ...prev, [name]: formatCPF(value) }));
-    } else if (name === 'telefone') {
-      setFormData(prev => ({ ...prev, [name]: formatPhone(value) }));
-    } else if (name === 'cep') {
-      setFormData(prev => ({ ...prev, [name]: formatCEP(value) }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
-
-    if (errors[name]) {
-      setErrors(prev => ({...prev, [name]: null}));
-    }
-  };
+      if (errors[name]) {
+        setErrors(prev => ({...prev, [name]: null}));
+      }
+    };
 
   // Validações melhoradas com mensagens de erro
   const validateField = (name, value) => {
@@ -302,6 +323,32 @@ const Register = () => {
       }
       
       setErrors(prev => ({ ...prev, form: errorMessage }));
+    }
+  };
+
+  const fetchAddressFromCEP = async (cep) => {
+    try {
+      // Remove caracteres não numéricos
+      const cleanedCEP = cep.replace(/\D/g, '');
+      
+      // Verifica se o CEP tem 8 dígitos
+      if (cleanedCEP.length !== 8) return null;
+      
+      const response = await fetch(`https://viacep.com.br/ws/${cleanedCEP}/json/`);
+      const data = await response.json();
+      
+      if (data.erro) {
+        return null;
+      }
+      
+      return {
+        endereco: data.logradouro || '',
+        uf: data.uf || '',
+        // Pode adicionar outros campos se necessário: bairro, cidade, etc.
+      };
+    } catch (error) {
+      console.error("Erro ao consultar ViaCEP:", error);
+      return null;
     }
   };
 
@@ -514,8 +561,9 @@ const Register = () => {
             
             <Row>
               <Col md={4}>
-                <FormGroup>
-                  <Label><FontAwesomeIcon icon={faEnvelope} className="me-2" />CEP*</Label>
+              <FormGroup>
+                <Label><FontAwesomeIcon icon={faEnvelope} className="me-2" />CEP*</Label>
+                <div className="position-relative">
                   <Input 
                     type="text" 
                     name="cep" 
@@ -526,11 +574,19 @@ const Register = () => {
                     placeholder="00000-000"
                     maxLength="9"
                   />
-                  {errors.cep && <small className="text-danger d-block mt-1">
-                    <FontAwesomeIcon icon={faExclamationTriangle} className="me-1" />
-                    {errors.cep}
-                  </small>}
-                </FormGroup>
+                  {loadingCEP && (
+                    <div className="position-absolute top-50 end-0 translate-middle-y pe-3">
+                      <div className="spinner-border spinner-border-sm text-primary" role="status">
+                        <span className="visually-hidden">Carregando...</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {errors.cep && <small className="text-danger d-block mt-1">
+                  <FontAwesomeIcon icon={faExclamationTriangle} className="me-1" />
+                  {errors.cep}
+                </small>}
+              </FormGroup>
               </Col>
               <Col md={4}>
                 <FormGroup>
