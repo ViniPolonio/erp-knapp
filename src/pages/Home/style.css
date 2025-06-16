@@ -1,0 +1,218 @@
+/* --- Variáveis de Tema (Cores) --- */
+:root {
+    --primary-yellow: #FFD700;
+    --dark-background: #fdfdfd;
+    --card-background: #2C2C2C;
+    --text-color: #FFD700;
+    --text-secondary: #AAAAAA;
+    --border-color: #ffffff;
+    --code-color: #9CDCFE;
+  }
+  
+  .dashboard-container {
+    background-color: var(--dark-background);
+    color: var(--text-color);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 40px;
+    min-height: 100vh;
+  }
+  
+  .header {
+    font-size: 2.5rem;
+    color: var(--primary-yellow);
+    margin-bottom: 40px;
+    text-align: center;
+    font-weight: bold;
+  }
+  
+  .sub-header {
+    margin: 0 0 10px 0;
+    color: var(--text-color);
+    border-left: 4px solid var(--primary-yellow);
+    padding-left: 15px;
+  }
+  
+  .description {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    padding-left: 19px; /* Alinha com o sub-header */
+  }
+  
+  /* --- Layout em Grid --- */
+  .grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+    align-items: start;
+  }
+  
+  .side-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  /* --- Componentes de Card --- */
+  .card {
+    background-color: var(--card-background);
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+  }
+  
+  .select {
+    width: 100%;
+    padding: 12px;
+    background-color: #000000;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-bottom: 20px;
+  }
+  
+  .json-box {
+    background-color: #000000;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    overflow-x: auto;
+    font-size: 0.85rem;
+    color: var(--code-color);
+    white-space: pre-wrap;
+  }
+  
+  .placeholder-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+    color: var(--text-secondary);
+  }
+  
+  /* --- Painel de Estatísticas --- */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+  .stat-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary-yellow);
+  }
+  
+  .stat-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+  
+  /* --- Modal --- */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;    
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .modal-content {
+    background-color: var(--card-background);
+    padding: 40px;
+    border-radius: 12px;
+    width: 400px;
+    text-align: center;
+    border-top: 5px solid var(--primary-yellow);
+  }
+  
+  .user-list {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0 0 0;
+    text-align: left;
+  }
+  
+  .user-list-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .user-list-item:last-child {
+    border-bottom: none;
+  }
+  
+  .join-date {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+  }
+  
+  /* --- Botão --- */
+  .button {
+    background-color: var(--primary-yellow);
+    color: var(--dark-background);
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  }
+  
+  /* Adicionando margem ao botão dentro do modal */
+  .modal-content .button {
+    margin-top: 20px;
+  }
+  /* Adicione no final do seu arquivo style.css */
+
+.loading-container, .error-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-size: 1.5rem;
+    color: var(--primary-yellow);
+    background-color: var(--dark-background);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  
+  .error-container {
+    color: #ff6b6b; /* Um vermelho para erros */
+  }
+  
+  .select-label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    padding-left: 4px;
+  }
+  
+  /* Estilo para select desabilitado */
+  .select:disabled {
+    background-color: #2a2a2a;
+    color: var(--text-secondary);
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+  .button-integrate {
+    margin-top: 20px; /* Adiciona um espaço entre a caixa de JSON e o botão */
+  }
